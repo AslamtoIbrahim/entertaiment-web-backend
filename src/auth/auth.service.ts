@@ -34,6 +34,7 @@ export class AuthService {
     if (!user) throw new UnauthorizedException();
 
     // 📙 hash password and compare
+    if (!user.password) throw new UnauthorizedException('Password is null');
     const isPasswordValid = await bcrypt.compare(pass, user.password);
     if (!isPasswordValid) throw new UnauthorizedException();
 
@@ -63,22 +64,21 @@ export class AuthService {
     return result;
   }
 
-  validateGoogleUser(res: Response, profile: GoogleProfile) {
-    const user = {
-      id: profile.id,
-      email: profile.emails[0].value,
-      username: `${profile.name.givenName} ${profile.name.familyName}`,
-    };
+  async validateGoogleUser(profile: GoogleProfile) {
+    if (!profile.emails || profile.emails.length === 0) {
+      throw new UnauthorizedException('No Email found in Google profile');
+    }
 
-    const payload = { sub: user.id, email: user.email };
-    const token = this.jwtService.sign(payload);
-
-    res.cookie('jwt', token, {
-      httpOnly: true,
-      secure: false,
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 1000,
-    });
+    let user = await this.usersService.findUserByEmail(profile.emails[0].value);
+    if (!user) {
+      user = await this.usersService.createUser({
+        username: `${profile.name?.givenName} ${profile.name?.familyName}`,
+        email: profile.emails[0].value,
+        password: null,
+        provider: 'google',
+        image: profile.photos?.[0]?.value ?? null,
+      });
+    }
 
     return user;
     // return { ...user, access_token: token };

@@ -9,7 +9,9 @@ export class UsersService {
   async createUser(data: {
     username: string;
     email: string;
-    password: string;
+    password: string | null;
+    provider?: string;
+    image?: string | null;
   }) {
     return await this.prisma.user.create({ data });
   }

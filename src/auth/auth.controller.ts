@@ -6,10 +6,10 @@ import {
   HttpStatus,
   Post,
   Req,
-  Request,
   Res,
   UseGuards,
 } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { AuthGuard } from '@nestjs/passport';
 import type { Response } from 'express';
 import { Public } from 'src/decorators/public.decorator';
@@ -19,7 +19,10 @@ import { SignUpDto } from './dto/sign-up.dto';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private jwtService: JwtService,
+  ) {}
 
   @Public()
   @HttpCode(HttpStatus.CREATED)
@@ -47,7 +50,7 @@ export class AuthController {
   getProfile(@Req() req) {
     const userId = req.user.sub;
     const user = this.authService.findUserById(userId);
-   
+    return user;
   }
 
   @Public()
@@ -58,7 +61,22 @@ export class AuthController {
   @Public()
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
-  async googleAuthRedirect(@Req() req) {
-    return req.user;
+  async googleAuthRedirect(
+    @Req() req,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    // return req.user;
+    const user = req.user;
+    const payload = { sub: user.id, email: user.email };
+    const token = this.jwtService.sign(payload);
+
+    res.cookie('jwt', token, {
+      httpOnly: true,
+      secure: false,
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 1000,
+    });
+
+    return user;
   }
 }

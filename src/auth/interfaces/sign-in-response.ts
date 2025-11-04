@@ -12,4 +12,5 @@ export interface GoogleProfile {
     givenName: string;
     familyName: string;
   };
+  photos?: { value: string[] };
 }
