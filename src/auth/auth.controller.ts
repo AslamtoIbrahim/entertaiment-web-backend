@@ -79,4 +79,10 @@ export class AuthController {
 
     return user;
   }
+
+  @Post('logout')
+  logout(@Res({ passthrough: true }) res: Response) {
+    res.clearCookie('jwt');
+    return { message: 'Logged out' };
+  }
 }
