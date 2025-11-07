@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Favorite" ALTER COLUMN "date" SET DATA TYPE TEXT;

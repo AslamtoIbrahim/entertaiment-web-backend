@@ -3,10 +3,12 @@ import {
   Controller,
   Get,
   HttpCode,
+  HttpException,
   HttpStatus,
   Post,
   Req,
   Res,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -16,6 +18,7 @@ import { Public } from 'src/decorators/public.decorator';
 import { AuthService } from './auth.service';
 import { SignInDto } from './dto/sign-in.dto';
 import { SignUpDto } from './dto/sign-up.dto';
+import { Profile } from './interfaces/shared';
 
 @Controller('auth')
 export class AuthController {
@@ -48,9 +51,20 @@ export class AuthController {
   // @UseGuards(AuthGuard)
   @Get('profile')
   getProfile(@Req() req) {
-    const userId = req.user.sub;
-    const user = this.authService.findUserById(userId);
-    return user;
+    try {
+      const user: Profile = req.user;
+      if (!user) throw new UnauthorizedException();
+      const userId = user.sub;
+      // console.log('userId', userId);
+      const currentUser = this.authService.findUserById(userId);
+      return currentUser;
+    } catch (error) {
+      console.log('error: ', error);
+      throw new HttpException(
+        'Failed to get profile',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   @Public()
@@ -61,28 +75,43 @@ export class AuthController {
   @Public()
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
-  async googleAuthRedirect(
-    @Req() req,
-    @Res({ passthrough: true }) res: Response,
-  ) {
+  googleAuthRedirect(@Req() req, @Res({ passthrough: true }) res: Response) {
     // return req.user;
-    const user = req.user;
-    const payload = { sub: user.id, email: user.email };
-    const token = this.jwtService.sign(payload);
+    try {
+      const user = req.user;
+      if (user) {
+        const payload = { sub: user.id, email: user.email };
+        const token = this.jwtService.sign(payload);
 
-    res.cookie('jwt', token, {
-      httpOnly: true,
-      secure: false,
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 1000,
-    });
+        res.cookie('jwt', token, {
+          httpOnly: true,
+          secure: false,
+          sameSite: 'lax',
+          maxAge: 60 * 60 * 1000,
+        });
+      }
 
-    return user;
+      res.redirect('http://localhost:5173');
+    } catch (error) {
+      console.log('error: ', error);
+      throw new HttpException(
+        'Failed to login with google',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   @Post('logout')
   logout(@Res({ passthrough: true }) res: Response) {
-    res.clearCookie('jwt');
-    return { message: 'Logged out' };
+    try {
+      res.clearCookie('jwt');
+      return { message: 'Logged out' };
+    } catch (error) {
+      console.log('error: ', error);
+      throw new HttpException(
+        'Failed to logout',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }

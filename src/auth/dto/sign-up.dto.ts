@@ -1,7 +1,7 @@
 import {
   IsEmail,
-  IsEmpty,
   IsNotEmpty,
+  IsOptional,
   IsString,
   MinLength,
 } from 'class-validator';
@@ -18,5 +18,6 @@ export class SignUpDto {
   password: string;
 
   @IsString()
-  image: string | null;
+  @IsOptional()
+  image?: string;
 }
