@@ -85,13 +85,13 @@ export class AuthController {
 
         res.cookie('jwt', token, {
           httpOnly: true,
-          secure: false,
-          sameSite: 'lax',
+          secure: true,
+          sameSite: 'none',
           maxAge: 60 * 60 * 1000,
         });
       }
 
-      res.redirect('http://localhost:5173');
+      res.redirect('https://gleaming-moxie-c073d0.netlify.app');
     } catch (error) {
       console.log('error: ', error);
       throw new HttpException(

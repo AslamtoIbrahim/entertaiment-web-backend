@@ -6,9 +6,16 @@ import cookieParser from 'cookie-parser';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // "https://gleaming-moxie-c073d0.netlify.app"
+  // https://gleaming-moxie-c073d0.netlify.app
   app.enableCors({
-    origin: 'http://localhost:5173',
+    origin: [
+      'https://gleaming-moxie-c073d0.netlify.app',
+      'http://localhost:5173',
+    ],
     credentials: true, // for send cookies
+    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin'],
   });
 
   // for reading
