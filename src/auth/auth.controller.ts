@@ -104,7 +104,11 @@ export class AuthController {
   @Post('logout')
   logout(@Res({ passthrough: true }) res: Response) {
     try {
-      res.clearCookie('jwt');
+      res.clearCookie('jwt', {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'none',
+      });
       return { message: 'Logged out' };
     } catch (error) {
       console.log('error: ', error);
