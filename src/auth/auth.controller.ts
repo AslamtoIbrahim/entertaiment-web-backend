@@ -18,7 +18,7 @@ import { AuthService } from './auth.service';
 import { SignInDto } from './dto/sign-in.dto';
 import { SignUpDto } from './dto/sign-up.dto';
 import { Profile } from './interfaces/shared';
-import { Public } from 'decorators/public.decorator';
+import { Public } from '../decorators/public.decorator';
 
 @Controller('auth')
 export class AuthController {

@@ -17,7 +17,7 @@ import {
 import { CreateFavoriteDto } from './dto/create-favorite.dto';
 import { UpdateFavoriteDto } from './dto/update-favorite.dto';
 import { FavoriteService } from './favorite.service';
-import { JwtAuthGuard } from 'auth/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('favorite')
 export class FavoriteController {
